@@ -396,6 +396,10 @@ void PlotWaveform()
             
             OCR0A = g_random_number;
             break;
+        
+        default:
+            
+            break;
     }
     
     //
@@ -464,57 +468,22 @@ void ResetSpeedAdjustSetting()
 
 void SetWaveform(int8_t change_value)
 {
-    Waveform previous_waveform;
-    Waveform next_waveform;
-    
     //
     // Change the current waveform to the next in line, either forward or back,
     // making sure to wrap around when necessary.
     //
     
-    switch (g_waveform)
+    if ((g_waveform == WaveformSine) && (change_value < 0))
     {
-        case WaveformSine:
-            previous_waveform = WaveformRandom;
-            next_waveform = WaveformRampUp;
-            break;
-        
-        case WaveformRampUp:
-            previous_waveform = WaveformSine;
-            next_waveform = WaveformRampDown;
-            break;
-        
-        case WaveformRampDown:
-            previous_waveform = WaveformRampUp;
-            next_waveform = WaveformTriangle;
-            break;
-        
-        case WaveformTriangle:
-            previous_waveform = WaveformRampDown;
-            next_waveform = WaveformSquare;
-            break;
-        
-        case WaveformSquare:
-            previous_waveform = WaveformTriangle;
-            next_waveform = WaveformRandom;
-            break;
-        
-        case WaveformRandom:
-            previous_waveform = WaveformSquare;
-            next_waveform = WaveformSine;
-            break;
-        
-        default:
-            return;
+        g_waveform = WaveformRandom;
     }
-    
-    if (change_value < 0)
+    else if ((g_waveform == WaveformRandom) && (change_value > 0))
     {
-        g_waveform = previous_waveform;
+        g_waveform = WaveformSine;
     }
-    else if (change_value > 0)
+    else
     {
-        g_waveform = next_waveform;
+        g_waveform = g_waveform + change_value;
     }
 }
 
