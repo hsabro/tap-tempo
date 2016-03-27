@@ -1,0 +1,176 @@
+Tap-tempo LFO v3 for the attiny84a.
+-----------------------------------
+
+Pin overview:
+=============
+Pin 1 (VCC): +5V DC
+Pin 2 (PB0): Speed adjust indicator. Pulled low when speed adjust setting is
+             active.
+Pin 3 (PB1): External tempo clock input. Override and clock the base tempo from
+             an external tap-tempo chip.
+Pin 4 (PB3): Unused (reset pin).
+Pin 5 (PB2): LFO output signal. The DDS PWM generated signal with the selected
+             waveform, tempo and multiplier.
+Pin 6 (PA7): Base tempo/sync clock output. Hook up a LED here to indicate base
+             tempo, or use to clock external tap-tempo chip.
+Pin 7 (PA6): Actual tempo clock output. Hook up a LED here to indicate the LFO
+             tempo (multiplier included).
+Pin 8 (PA5): Encoder input B. Connect one leg of rotary encoder.
+Pin 9 (PA4): Encoder input A. Connect other leg of rotary encoder.
+Pin 10 (PA3): Settings selection input. Momentary switch to cycle through
+              active settings.
+Pin 11 (PA2): Multiplier indicator. Pulled low when multiplier setting is
+              active.
+Pin 12 (PA1): Waveform indicator. Pulled low when waveform setting is active.
+Pin 13 (PA0): Tap tempo input. Momentary switch used to set the tempo.
+Pin 14 (GND): Ground.
+
+Setup:
+======
+See example schematic for suggested setup.
+
+- The chip requires a +5V DC power supply. A 100nF ceramic capacitor close to
+  the VCC pin and connected to ground is recommended to reduce digital noise.
+- Waveform selection, multiplier selection and speed adjustments are all made
+  using a single rotary encoder. Connect the rotary encoder legs to inputs A
+  and B on the chip, and the center pin to ground. Each notch on the encoder
+  toggles the previous or next setting on the currently active setting (more
+  on this next).
+- Selecting which setting is currently active is done via a momentary switch.
+  Connect the switch between the settings selection input pin and ground. Many
+  rotary encoders come with a momentary push button built in, and this can be
+  very convenient to use here.
+- It can be difficult to know what setting is currently active. Connect
+  individual LEDS (cathodes) to each of the three indicator pins (PB0, PA2 and
+  PA1), via a common 1k resistor between the anodes and VCC. The indicator pin
+  matching the current setting will be pulled low, lighting the connected LED.
+- Tap tempo is typically input via a momentary switch rugged enough to be
+  operated with your foot. Connect this between the tap tempo input pin and
+  ground.
+- If you want the chip to be externally clocked from another tap-tempo chip,
+  connect the external tempo clock input pin to an input jack tip via a 1k
+  resistor. The input jack sleeve connects to ground.
+  NOTE: If you're setting up both external clock and tap input switch it could
+        be a good idea to use a DPDT selection switch to only route one of the
+        pins to the chip at any one time, to prevent two sources from setting
+        tempo at the same time.
+- The LFO signal output connects to whatever circuitry you want to modulate
+  with a Low Frequency Oscillation. Use a low-pass filter to get rid of the
+  high frequency PWM noise and make the signal smoother.
+- Connect a LED to the base tempo output pin for a visual indicator of the
+  current base tempo, regardless of any multiplier setting. The cathode
+  connects to the pin and a 1k resistor goes between the anode and VCC.
+  Note that this signal, if routed to the external clock input of a secondary
+  tap-tempo chip, can also clock the base tempo of the secondary chip.
+- Connect a LED to the actual tempo output pin for a visual indicator of the
+  current tempo, including whatever multiplier setting is currently active.
+
+Operation:
+==========
+
+When powered up, the defaults are:
+----------------------------------
+  - Base tempo is set to 1Hz (one clock cycle per second).
+  - The waveform is set to sine.
+  - The multiplier is set to 1:1 (a quarter note).
+  - The speed adjustment is set to +/- 0 milliseconds.
+  - The current setting is set to speed adjustments.
+
+Setting tempo:
+--------------
+  1. Toggle the tap input switch once to initiate tempo counting. The base
+     tempo LED (if connected) will light up and stay lit waiting for the second
+     toggle.
+  2. Toggle the tap input switch a second time to lock in the tempo. The base
+     tempo LED (again, if connected) will turn off and resume normal operation
+     (alternating between on/off between base tempo cycles).
+  
+  The base tempo will now equal the time interval between the two toggles.
+  
+  - When the tap input switch is toggled the first time, the LFO output signal
+    is aligned accordingly. If the user then lets the tempo count time out,
+    this can be a convenient way of aligning a given tempo in time without
+    changing the interval. I.e. you've got the correct tempo, but the pulse is
+    off-beat; by toggling once and letting it time out you can force the
+    current tempo on-beat again.
+  
+  - If the second toggle does not arrive within a certain time frame, the tempo
+    counting is cancelled and normal operation is resumed. A tempo output that
+    is too quick will similarly be ignored.
+  
+  Minimum tap input time / max input tempo:
+    20Hz = 50 milliseconds.
+    
+  Maximum tap input time / min input tempo:
+    0.1Hz = 10 seconds.
+  
+  - The current tempo can also be micro-adjusted via the rotary encoder when 
+    the current setting is set to speed adjustment. The adjustments will be
+    immediately applied to the base tempo and the LFO output.
+  - Whenever a new tempo is assigned, any speed adjustments are reset.
+  
+Getting tempo from external chip:
+---------------------------------
+  - When an external tap-tempo clock signal is routed to the clock input pin,
+    the base tempo will be kept in sync with this clock (given that it doesn't
+    exceed the allowed tempo min/max etc).
+  - Any tap input from the switch will cause temporary tempo abnormalities,
+    until the next sync input clocks in the correct tempo again, so the tap
+    input switch is best kept disconnected while operating on an external
+    clock signal.
+  - Similar to tap inputs, any speed adjustments will also quickly be reset by
+    the next sync input.
+  - Both waveform selection and multiplier settings function normally.
+
+Settings:
+---------
+  - The rotary encoder is always assigned one of the settings. Toggling the
+    settings selection input pin reassigns the encoder to the next setting:
+      
+      "speed adjust" -> "waveform" -> "multiplier" -> "speed adjust" etc.
+  
+  - When assigned to speed adjust:
+    - Rotating the encoder adds or subtracts a number of milliseconds to the
+      base tempo. When continuously turned the speed adjustment of each
+      notch/step gradually increases.
+    - The speed cannot be adjusted beyond either of the min/max tempo bounds
+      (see above).
+      
+  - When assigned to waveform:
+    - Rotating the encoder selects the next or previous waveform in a circular
+      fashion.
+    - Available waveforms:
+      - Sine (default)
+      - Ramp up.
+      - Ramp down.
+      - Triangle / saw tooth.
+      - Square.
+      - "Random" - a square wave, but with a "random" amplitude each cycle.
+      
+  - When assigned to multiplier:
+    - Rotating the encoder left or right selects the next slower or faster
+      multiplier, stoping  at the lowest or highest one (no wrapping around).
+    - Available multipliers (based on 1:1 tempo being a quarter note):
+      - "Whole note" - four times slower than base tempo.
+      - "Dotted half note" - Three times slower than base tempo.
+      - "Half note" - ...
+      - "Dotted quarter note"
+      - "Quarter note" (default) - 1:1 base tempo.
+      - "Dotted eighth note"
+      - "Eighth note"
+      - "Dotted sixteenth note"
+      - "Triplet note" - Three cycles for each base tempo cycle.
+      - "Sixteenth note"
+  
+  - The currently selected setting can be reset to it's default value by
+    connecting and keeping the settings selection switch connected for 2
+    seconds or more. This will perform a reset of the current setting rather
+    than cycling to the next setting.
+  - Default settings are:
+    - "Speed adjust": +/- 0 milliseconds; i.e. cancel any adjustments that has
+      been made and restore the last tap input tempo.
+    - "Waveform": Sine wave.
+    - "Multiplier": "Quarter note"; i.e. no multiplier.
+
+ 
+      
