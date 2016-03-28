@@ -1,0 +1,25 @@
+Building
+--------
+
+What you need:
+  - An ISP programmer that supports the attiny84a (and all that goes with it;
+    USB cable etc).
+  - An attiny84a AVR microcontroller.
+
+I've only built this on OS X, but the process should be similar enough on Linux
+and Windows. On Windows you also have the option of using AVR Studio. If you
+do, some minor tweaking is probably necessary.
+
+Note: Any existing firmware on the attiny84a will be erased when you upload a
+      new one.
+
+OS X
+----
+1. Install CrossPack to get avrdude and AVR libraries for GCC.
+   https://www.obdev.at/products/crosspack/index.html
+2. "cd" to the firmware directory where the source code is.
+3. "make" to compile.
+4. Connect the ISP programmer, attiny84a and power up.
+5. "make flash" to upload the .hex binary to the attiny84a.
+6. "make fuse" to set the attiny84a fuses correctly.
+7. Power off the ISP programmer. Chip should be ready.
