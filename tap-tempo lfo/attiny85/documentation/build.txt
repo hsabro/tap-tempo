@@ -37,3 +37,9 @@ OS X
 6. "make fuse" to set the attiny85 fuses correctly (including disabling RESET).
 
 7. Power off the programmer. Chip should be ready.
+
+Known issue:
+------------
+During ISP fuse programming the lock fuse fails to read properly after having
+been written. The chip should work correctly; will have to look into this
+error.

@@ -28,6 +28,10 @@
 #include "main.h"
 #include "signaling.h"
 
+//
+// Available waveforms.
+//
+
 typedef enum
 {
     WaveformSine = 0,
