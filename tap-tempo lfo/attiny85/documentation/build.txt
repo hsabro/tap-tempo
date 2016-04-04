@@ -1,0 +1,39 @@
+Building
+--------
+
+What you need:
+  - An ISP programmer that supports the attiny85 (and all that goes with it;
+    USB cable etc).
+  - A programmer that supports HVSP (High Voltage Serial Programming) is
+    optional, but required if you want eternal clock sync inputs. The Atmel
+    STK500 works, but there may be other capable programmers out there too.
+  - An attiny85 AVR microcontroller.
+
+I've only built this on OS X, but the process should be similar enough on Linux
+and Windows. On Windows you also have the option of using AVR Studio. If you
+do, some minor tweaking is probably necessary.
+
+Note: Any existing firmware on the attiny85 will be erased when you upload a
+      new one.
+
+OS X
+----
+1. Install CrossPack to get avrdude and AVR libraries for GCC.
+   https://www.obdev.at/products/crosspack/index.html
+2. "cd" to the firmware directory where the source code is.
+
+(ISP version)
+3. "make ENABLE_EXT_CLK=0" to compile without the external clock pin.
+4. Connect the ISP programmer, attiny85 and power up.
+5. "make flash ENABLE_EXT_CLK=0" to upload the .hex binary to the attiny85 over
+   ISP.
+6. "make fuse ENABLE_EXT_CLK=0" to set the attiny85 fuses correctly (retaining
+   the RESET pin).
+
+(HSVP version)
+3. "make " to compile. 
+4. Connect the HSVP programmer, attiny85 and power up.
+5. "make flash" to upload the .hex binary to the attiny85.
+6. "make fuse" to set the attiny85 fuses correctly (including disabling RESET).
+
+7. Power off the programmer. Chip should be ready.
