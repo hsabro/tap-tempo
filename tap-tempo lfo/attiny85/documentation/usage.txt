@@ -1,0 +1,132 @@
+Tap-tempo LFO v3 for the attiny85.
+-----------------------------------
+
+Pin overview:
+=============
+Pin 1 (PB5): (HVSP) External tempo clock input. Override and clock the base
+             tempo from an external tap-tempo chip.
+             (ISP) Unused (reset pin).
+Pin 2 (PB3): Waveform ADC input (0 - +5V DC). The static voltage at this pin
+             will determine the output waveform.
+Pin 3 (PB4): Multiplier ADC input (0 - +5V DC). The static voltage at this pin
+             will determine the actual tempo of the LFO signal relative to the
+             current base tempo.
+Pin 4 (GND): Ground.
+Pin 5 (PB0): LFO output signal. The DDS PWM generated signal with the selected
+             waveform, tempo and multiplier.
+Pin 6 (PB1): Base tempo/sync clock output. Hook up a LED here to indicate base
+             tempo, or use to clock external tap-tempo chip.
+Pin 7 (PB2): Tap tempo input. Momentary switch used to set the tempo.
+Pin 8 (VCC): +5V DC
+
+Setup:
+======
+See example schematic for suggested setup.
+
+- The chip requires a +5V DC power supply. A 100nF ceramic capacitor close to
+  the VCC pin and connected to ground is recommended to reduce digital noise.
+- Waveform selection and multiplier selection are input using ADC (Analog to
+  Digital Conversion). Many configurations are possible based on the desired
+  options, but the easiest way is to hook up a 10k potentiometer between +5V
+  and ground with the wiper at the input selection pin (via a 1k resistor).
+- Tap tempo is typically input via a momentary switch rugged enough to be
+  operated with your foot. Connect this between the tap tempo input pin and
+  ground.
+- If you want the chip to be externally clocked from another tap-tempo chip,
+  connect the external tempo clock input pin to an input jack tip via a 1k
+  resistor. The input jack sleeve connects to ground.
+  NOTE: If you're setting up both external clock and tap input switch it could
+        be a good idea to use a DPDT selection switch to only route one of the
+        pins to the chip at any one time, to prevent two sources from setting
+        tempo at the same time.
+  NOTE 2: This option disables the reset pin, making ISP as a programming
+          method impossible. HVSP will be required.
+- The LFO signal output connects to whatever circuitry you want to modulate
+  with a Low Frequency Oscillation. Use a low-pass filter to get rid of the
+  high frequency PWM noise and make the signal smoother.
+- Connect a LED to the base tempo output pin for a visual indicator of the
+  current base tempo, regardless of any multiplier setting. The cathode
+  connects to the pin and a 1k resistor goes between the anode and VCC.
+  Note that this signal, if routed to the external clock input of a secondary
+  tap-tempo chip, can also clock the base tempo of the secondary chip.
+
+Operation:
+==========
+
+When powered up, the defaults are:
+----------------------------------
+  - Base tempo is set to 1Hz (one clock cycle per second).
+
+Setting tempo:
+--------------
+  1. Toggle the tap input switch once to initiate tempo counting. The base
+     tempo LED (if connected) will light up and stay lit waiting for the second
+     toggle.
+  2. Toggle the tap input switch a second time to lock in the tempo. The base
+     tempo LED (again, if connected) will turn off and resume normal operation
+     (alternating between on/off between base tempo cycles).
+  
+  The base tempo will now equal the time interval between the two toggles.
+  
+  - When the tap input switch is toggled the first time, the LFO output signal
+    is aligned accordingly. If the user then lets the tempo count time out,
+    this can be a convenient way of aligning a given tempo in time without
+    changing the interval. I.e. you've got the correct tempo, but the pulse is
+    off-beat; by toggling once and letting it time out you can force the
+    current tempo on-beat again.
+  
+  - If the second toggle does not arrive within a certain time frame, the tempo
+    counting is cancelled and normal operation is resumed. A tempo output that
+    is too quick will similarly be ignored.
+  
+  Minimum tap input time / max input tempo:
+    20Hz = 50 milliseconds.
+    
+  Maximum tap input time / min input tempo:
+    0.1Hz = 10 seconds.
+  
+Getting tempo from external chip (if included):
+-----------------------------------------------
+  - When an external tap-tempo clock signal is routed to the clock input pin,
+    the base tempo will be kept in sync with this clock (given that it doesn't
+    exceed the allowed tempo min/max etc).
+  - Any tap input from the switch will cause temporary tempo abnormalities,
+    until the next sync input clocks in the correct tempo again, so the tap
+    input switch is best kept disconnected while operating on an external
+    clock signal.
+  - Both waveform selection and multiplier settings function normally.
+
+Settings:
+---------
+  - The waveform and multiplier is set by holding the respective input
+    selection pin at a given DC voltage. The possibilities are anything between
+    0V and +5V, and each selection control subdivides the available voltage
+    span in equal regions, one for each setting.
+    
+    E.g. if there were 5 available waveforms, a DC voltage between 0 and +1
+    would equate to the first one, a DC voltage between +1 and +2 would equate
+    to the second one, etc. 
+  
+  - Available waveforms:
+    - Sine (default)
+    - Ramp up.
+    - Ramp down.
+    - Triangle / saw tooth.
+    - Square.
+    - "Random" - a square wave, but with a "random" amplitude each cycle.
+      
+  - Available multipliers (based on 1:1 tempo being a quarter note):
+    - "Whole note" - four times slower than base tempo.
+    - "Dotted half note" - Three times slower than base tempo.
+    - "Half note" - ...
+    - "Dotted quarter note"
+    - "Quarter note" (default) - 1:1 base tempo.
+    - "Dotted eighth note"
+    - "Eighth note"
+    - "Dotted sixteenth note"
+    - "Sixteenth note"
+    
+    Note: Having an equal number of multiplier options that are faster than-
+          and slower than- means that if a potentiometer is used the center
+          position should line up with the base tempo.
+      
