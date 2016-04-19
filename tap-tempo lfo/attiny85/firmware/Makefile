@@ -37,7 +37,7 @@ DEVICE     = attiny85
 CLOCK      = 8000000
 PROGRAMMER = -c stk500$(PROG_MODE)
 OBJECTS    = main.o switching.o signaling.o
-FUSES      = -U lfuse:w:0xe2:m -U hfuse:w:$(HFUSE):m -U efuse:w:0xff:m -U lock:w:0xfd:m
+FUSES      = -U lfuse:w:0xe2:m -U hfuse:w:$(HFUSE):m -U efuse:w:0xff:m -U lock:w:0xfe:m
 TARGET     = tt_lfo_85
 
 CFLAGS += -Os -g -std=c99 -Wall -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -DENABLE_EXT_CLK=$(ENABLE_EXT_CLK)

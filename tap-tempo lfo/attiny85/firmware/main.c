@@ -35,6 +35,8 @@
 //
 // Note 2: The "divide clock by 8" fuse bit needs to be cleared for this code
 //         to run at the proper speed.
+// Note 3: The "disable reset" fuse bit needs to be set to make room for the
+//         external clock sync input feature. Left clear otherwise.
 //
 
 #include <avr/io.h>
