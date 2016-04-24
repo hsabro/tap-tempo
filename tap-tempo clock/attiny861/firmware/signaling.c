@@ -1,5 +1,5 @@
 //
-// Tap-tempo LFO for 8-bit AVR.
+// Tap-tempo clock for 8-bit AVR.
 // 
 // Copyright (C) 2013-2016 Harald Sabro
 // 
